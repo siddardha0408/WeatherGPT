@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WeatherGPT — AI Weather Intelligence, Agricultural Decision Support, IMD Official Alerts, and Natural Language Climate Forecasting.">
+    <title>WeatherGPT — AI Weather Intelligence & Decision Support</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-group">
+                <div class="logo-icon">🌤️</div>
+                <div class="logo-text">
+                    <h1>Weather<span class="gradient-text">GPT</span></h1>
+                    <p class="tagline">AI Weather Intelligence & Decision Support</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div id="liveStatusPill" class="status-pill">
+                    <span class="status-dot"></span>
+                    <span id="statusText">AI Intelligence Active</span>
+                </div>
+
+                <div class="location-badge" id="currentLocationBadge">
+                    <span class="loc-pin">📍</span>
+                    <span id="headerLocationName">Detecting location...</span>
+                </div>
+
+                <button id="useLocationBtn" class="btn btn-secondary btn-sm" aria-label="Use My Location" title="Get GPS Location">
+                    <span class="icon">🎯</span> My Location
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-wrapper">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <span class="hero-chip">✨ Next-Gen Meteorological Intelligence</span>
+                <h2 class="hero-title">Understand Your Weather.<br><span class="gradient-text">Make Better Decisions.</span></h2>
+                <p class="hero-subtitle">
+                    Ask WeatherGPT anything about forecasts, severe risks, agricultural spraying suitability, climate trends, or official IMD alerts in English or Indian languages.
+                </p>
+            </div>
+
+            <!-- Conversational Query Box -->
+            <div class="query-card">
+                <form id="queryForm" class="query-form" onsubmit="return false;">
+                    <div class="input-container">
+                        <span class="search-icon">🔍</span>
+                        <input 
+                            type="text" 
+                            id="queryInput" 
+                            class="query-input" 
+                            placeholder="Ask anything... (e.g. Will it rain tomorrow? / Can I spray pesticides? / eroju guntur lo weather ela undhi?)" 
+                            autocomplete="off"
+                            aria-label="Conversational weather question"
+                        />
+                        <button type="button" id="micBtn" class="mic-btn" aria-label="Voice Search" title="Speak Query">
+                            <span id="micIcon" class="mic-icon">🎤</span>
+                        </button>
+                        <button type="submit" id="askBtn" class="btn btn-primary" aria-label="Submit Question">
+                            <span>Ask WeatherGPT</span>
+                            <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Sample Query Chips -->
+                <div class="query-chips">
+                    <span class="chips-label">Try asking:</span>
+                    <button class="chip" data-query="Will it rain tomorrow in Guntur?">🌧️ Rain tomorrow?</button>
+                    <button class="chip" data-query="Can I spray pesticides tomorrow?">🌾 Spray pesticides?</button>
+                    <button class="chip" data-query="What is today's UV index and heat risk?">☀️ UV & Heat risk?</button>
+                    <button class="chip" data-query="What is the IMD official warning?">⚠️ IMD Warning?</button>
+                    <button class="chip" data-query="Is rainfall increasing in Guntur?">📈 Climate trend?</button>
+                    <button class="chip" data-query="eroju guntur lo weather ela vundhi">🗣️ Roman Telugu</button>
+                    <button class="chip" data-query="ఈరోజు గుంటూరులో వాతావరణం ఎలా ఉంది?">🇮🇳 తెలుగు</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading-container hidden">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loadingMessage">Analyzing meteorological data & computing risks...</div>
+        </div>
+
+        <!-- Error Banner -->
+        <div id="errorBanner" class="alert-banner error-banner hidden">
+            <span class="alert-icon">⚠️</span>
+            <div class="alert-content">
+                <strong id="errorTitle">Notice</strong>
+                <p id="errorMessage">Unable to retrieve data.</p>
+            </div>
+            <button id="dismissErrorBtn" class="btn-close" aria-label="Dismiss error">✕</button>
+        </div>
+
+        <!-- AI Conversational Analysis Section -->
+        <section id="aiResponseSection" class="ai-response-card">
+            <div class="ai-header">
+                <div class="ai-title-wrap">
+                    <span class="ai-sparkle">✨</span>
+                    <h3>WeatherGPT Conversational Analysis</h3>
+                </div>
+                <div class="ai-controls">
+                    <button id="readAnswerBtn" class="btn btn-ghost btn-sm" aria-label="Read answer aloud" title="Listen to AI analysis">
+                        <span class="icon">🔊</span> Listen
+                    </button>
+                    <button id="stopVoiceBtn" class="btn btn-ghost btn-sm hidden" aria-label="Stop audio" title="Stop Speech">
+                        <span class="icon">🔇</span> Stop
+                    </button>
+                </div>
+            </div>
+            <div class="ai-body">
+                <div id="aiAnswerContent" class="ai-text">
+                    Welcome to WeatherGPT! Ask any weather question above or browse current conditions and advisories below.
+                </div>
+            </div>
+        </section>
+
+        <!-- Official IMD Warning Banner -->
+        <section id="imdWarningSection" class="imd-banner hidden">
+            <div class="imd-header">
+                <div class="imd-badge" id="imdBadge">🟡 Yellow Watch</div>
+                <div class="imd-source">India Meteorological Department (IMD) Official Bulletin</div>
+            </div>
+            <div class="imd-body">
+                <p id="imdActionAdvice">Be updated on prevailing weather conditions.</p>
+                <div id="imdEventsContainer" class="imd-events"></div>
+            </div>
+        </section>
+
+        <!-- Main Weather Dashboard Grid -->
+        <section class="dashboard-grid">
+            <!-- Left Column: Primary Weather & Key Metrics -->
+            <div class="dash-col-main">
+                <!-- Main Overview Card -->
+                <div class="weather-card primary-weather-card">
+                    <div class="card-top">
+                        <div class="loc-time">
+                            <h2 id="displayCityName" class="city-title">Current Location</h2>
+                            <p id="displayDateTime" class="datetime-text">Updating...</p>
+                        </div>
+                        <div id="weatherConditionIcon" class="large-weather-icon">🌤️</div>
+                    </div>
+
+                    <div class="temp-hero">
+                        <div class="temp-val-wrap">
+                            <span id="currentTemp" class="temp-val">--</span>
+                            <span class="temp-unit">°C</span>
+                        </div>
+                        <div class="condition-meta">
+                            <div id="currentCondition" class="condition-label">Partly Cloudy</div>
+                            <div class="feels-like">Feels like <strong id="currentFeelsLike">--°C</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="card-bottom-tags">
+                        <span class="tag-pill" id="todayHighLow">High: --°C / Low: --°C</span>
+                        <span class="tag-pill" id="rainChanceTag">🌧️ Rain: --%</span>
+                        <span class="tag-pill" id="windTag">💨 Wind: -- km/h</span>
+                    </div>
+                </div>
+
+                <!-- 10 Quick Insight Metric Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card" id="cardTemp">
+                        <div class="metric-icon">🌡️</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Temperature</span>
+                            <span class="metric-value" id="mTemp">--°C</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardFeelsLike">
+                        <div class="metric-icon">🧣</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Feels Like</span>
+                            <span class="metric-value" id="mFeels">--°C</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardHumidity">
+                        <div class="metric-icon">💧</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Humidity</span>
+                            <span class="metric-value" id="mHumidity">--%</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardRainProb">
+                        <div class="metric-icon">🌧️</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Rain Probability</span>
+                            <span class="metric-value" id="mRainProb">--%</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardPrecipitation">
+                        <div class="metric-icon">☔</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Precipitation</span>
+                            <span class="metric-value" id="mPrecip">-- mm</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardWind">
+                        <div class="metric-icon">💨</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Wind Speed</span>
+                            <span class="metric-value" id="mWind">-- km/h</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardUV">
+                        <div class="metric-icon">☀️</div>
+                        <div class="metric-info">
+                            <span class="metric-label">UV Index</span>
+                            <span class="metric-value" id="mUV">--</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardVisibility">
+                        <div class="metric-icon">👁️</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Visibility</span>
+                            <span class="metric-value" id="mVis">-- km</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardPressure">
+                        <div class="metric-icon">⏲️</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Pressure</span>
+                            <span class="metric-value" id="mPressure">-- hPa</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" id="cardCloudCover">
+                        <div class="metric-icon">☁️</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Cloud Cover</span>
+                            <span class="metric-value" id="mCloud">--%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hourly Forecast Timeline & Chart -->
+                <div class="card hourly-forecast-card">
+                    <div class="card-header">
+                        <h3>⏱️ 24-Hour Forecast</h3>
+                        <span class="sub-text">Temperature & Precipitation curve</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Weather Intelligence, Agriculture & Risks -->
+            <div class="dash-col-side">
+                <!-- Weather Intelligence Risk Assessment -->
+                <div class="card intelligence-card">
+                    <div class="card-header">
+                        <h3>🛡️ Weather Intelligence</h3>
+                        <span class="badge" id="overallRiskBadge">🟢 Low Risk</span>
+                    </div>
+
+                    <div class="risk-matrix">
+                        <div class="risk-row">
+                            <span class="risk-name">🔥 Heat Risk</span>
+                            <span class="risk-badge" id="heatRiskBadge">Low</span>
+                        </div>
+                        <div class="risk-row">
+                            <span class="risk-name">🌧️ Rain Risk</span>
+                            <span class="risk-badge" id="rainRiskBadge">Very Low</span>
+                        </div>
+                        <div class="risk-row">
+                            <span class="risk-name">💨 Wind Risk</span>
+                            <span class="risk-badge" id="windRiskBadge">Low</span>
+                        </div>
+                        <div class="risk-row">
+                            <span class="risk-name">☀️ UV Risk</span>
+                            <span class="risk-badge" id="uvRiskBadge">Moderate</span>
+                        </div>
+                        <div class="risk-row">
+                            <span class="risk-name">🌫️ Visibility</span>
+                            <span class="risk-badge" id="visRiskBadge">Good</span>
+                        </div>
+                    </div>
+
+                    <div class="advisories-container">
+                        <h4>Actionable Advisories:</h4>
+                        <ul id="advisoriesList" class="advisories-list">
+                            <li>Pleasant meteorological conditions. Great for outdoor activities.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Agriculture Advisory Card -->
+                <div class="card agri-card">
+                    <div class="card-header">
+                        <h3>🌾 Agriculture Intelligence</h3>
+                        <span class="badge" id="agriSuitabilityBadge">✅ Suitable</span>
+                    </div>
+
+                    <div class="agri-body">
+                        <div class="agri-metric-summary">
+                            <p><strong>Pesticide & Foliar Spray Suitability:</strong></p>
+                            <p id="agriSummaryText" class="agri-summary">Analyzing forecast spraying window...</p>
+                        </div>
+
+                        <div class="agri-factors" id="agriFactors">
+                            <div class="agri-pill favorable" id="agriFavorable">Optimal wind & dry foliage window</div>
+                        </div>
+
+                        <p class="agri-rec" id="agriRec">Early morning spraying window recommended.</p>
+                        <p class="disclaimer-text">Disclaimer: Weather-based advisory only. Always follow pesticide labels.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7-Day Daily Forecast Section -->
+        <section class="forecast-section">
+            <div class="section-header">
+                <h3>📅 7-Day Meteorological Forecast</h3>
+                <p>Comprehensive temperature range, rain probabilities, and condition outlook.</p>
+            </div>
+            <div class="daily-deck" id="dailyDeck">
+                <!-- Dynamically rendered 7 daily cards -->
+            </div>
+        </section>
+
+        <!-- Historical & Climate Trends Section -->
+        <section class="card climate-section">
+            <div class="section-header">
+                <h3>📊 Historical Weather & Climate Trends</h3>
+                <p>Analyze multi-year precipitation, warming slopes, and historical weather records.</p>
+            </div>
+
+            <div class="climate-controls">
+                <div class="control-group">
+                    <label for="climateYearRange">Analyze Multi-Year Climate:</label>
+                    <select id="climateYearRange" class="select-input">
+                        <option value="2021-2025" selected>2021 – 2025 (5-Year Trend)</option>
+                        <option value="2018-2024">2018 – 2024 (7-Year Trend)</option>
+                        <option value="2020-2024">2020 – 2024 (5-Year Trend)</option>
+                    </select>
+                    <button id="loadClimateBtn" class="btn btn-secondary btn-sm">Analyze Climate</button>
+                </div>
+            </div>
+
+            <div class="climate-content-grid">
+                <div class="climate-stats" id="climateStatsBox">
+                    <h4>Climate Tendency Summary</h4>
+                    <div id="climateSummaryText" class="climate-text">
+                        Click "Analyze Climate" to compute annual rainfall totals, linear regression slopes, and percentage change.
+                    </div>
+                </div>
+                <div class="climate-chart-container">
+                    <canvas id="climateChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p><strong>WeatherGPT</strong> — AI Meteorological Intelligence, Decision Support & Farming Advisory</p>
+            <p class="footer-sub">Data sources: Open-Meteo Meteorological APIs, India Meteorological Department (IMD) Alerts, Google Gemini AI.</p>
+            <p class="footer-copy">© 2026 WeatherGPT. All meteorological models for informational & decision support purposes.</p>
+        </div>
+    </footer>
+
+    <!-- Frontend Controller Script -->
+    <script src="script.js"></script>
+</body>
+</html>

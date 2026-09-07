@@ -490,6 +490,8 @@ async def get_agriculture_advisory_endpoint(
     if target_lat is None or target_lon is None:
         target_lat = 16.3067
         target_lon = 80.4365
+    weather_data = await fetch_weather_data(target_lat, target_lon, target_city)
+    return generate_agricultural_advisory(weather_data, day_index)
 
 
 # Serve frontend files from the root URL
@@ -500,5 +502,4 @@ if os.path.exists(FRONTEND_DIR):
         name="frontend"
     )
 
-    weather_data = await fetch_weather_data(target_lat, target_lon, target_city)
-    return generate_agricultural_advisory(weather_data, day_index)
+    

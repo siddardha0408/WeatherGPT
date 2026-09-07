@@ -491,5 +491,14 @@ async def get_agriculture_advisory_endpoint(
         target_lat = 16.3067
         target_lon = 80.4365
 
+
+# Serve frontend files from the root URL
+if os.path.exists(FRONTEND_DIR):
+    app.mount(
+        "/",
+        StaticFiles(directory=FRONTEND_DIR, html=True),
+        name="frontend"
+    )
+
     weather_data = await fetch_weather_data(target_lat, target_lon, target_city)
     return generate_agricultural_advisory(weather_data, day_index)
